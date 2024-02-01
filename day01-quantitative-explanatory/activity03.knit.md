@@ -6,9 +6,7 @@ editor_options:
     wrap: sentence
 ---
 *Test 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 In the last activity, you might have noticed that I made this Rmd output a document with a type of `github_document` (in the YAML header underneath the title - on line 3) instead of a HTML, Word, or PDF document.
 This produces a GitHub friendly Markdown file that GitHub then renders to HTML.
@@ -26,7 +24,8 @@ Remember that [Emil Hvitfeldt](https://www.emilhvitfeldt.com/) (of Posit) has pu
 
 -   If either of these are not currently listed (they should be because you verified this in Activity 1), type the following in your **Console** pane, replacing `package_name` with the appropriate name, and press Enter/Return afterwards.
 
-    ```{r  eval = FALSE}
+    
+    ```r
     install.packages("package_name")
     ```
 
@@ -34,10 +33,64 @@ Remember that [Emil Hvitfeldt](https://www.emilhvitfeldt.com/) (of Posit) has pu
 
 -   Run the `load-packages` code chunk or **knit** <img src="../README-img/knit-icon.png" alt="knit" width="20"/> icon your Rmd document to verify that no errors occur.
 
-```{r load-packages}
+
+```r
 library(tidymodels)
+```
+
+```
+## ── Attaching packages ────────────────────────────────────── tidymodels 1.1.0 ──
+```
+
+```
+## ✔ broom        1.0.5     ✔ recipes      1.0.6
+## ✔ dials        1.2.0     ✔ rsample      1.1.1
+## ✔ dplyr        1.1.2     ✔ tibble       3.2.1
+## ✔ ggplot2      3.4.2     ✔ tidyr        1.3.0
+## ✔ infer        1.0.4     ✔ tune         1.1.1
+## ✔ modeldata    1.1.0     ✔ workflows    1.1.3
+## ✔ parsnip      1.1.0     ✔ workflowsets 1.0.1
+## ✔ purrr        1.0.1     ✔ yardstick    1.2.0
+```
+
+```
+## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+## ✖ purrr::discard() masks scales::discard()
+## ✖ dplyr::filter()  masks stats::filter()
+## ✖ dplyr::lag()     masks stats::lag()
+## ✖ recipes::step()  masks stats::step()
+## • Use tidymodels_prefer() to resolve common conflicts.
+```
+
+```r
 library(tidyverse)
+```
+
+```
+## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ forcats   1.0.0     ✔ readr     2.1.4
+## ✔ lubridate 1.9.2     ✔ stringr   1.5.0
+```
+
+```
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ readr::col_factor() masks scales::col_factor()
+## ✖ purrr::discard()    masks scales::discard()
+## ✖ dplyr::filter()     masks stats::filter()
+## ✖ stringr::fixed()    masks recipes::fixed()
+## ✖ dplyr::lag()        masks stats::lag()
+## ✖ readr::spec()       masks yardstick::spec()
+## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+```
+
+```r
 library(GGally)
+```
+
+```
+## Registered S3 method overwritten by 'GGally':
+##   method from   
+##   +.gg   ggplot2
 ```
 
 Since we will be looking at many relationships graphically, it will be nice to not have to code each of these individually.
@@ -49,7 +102,8 @@ For example, [`GGally::ggpairs`](http://ggobi.github.io/ggally/articles/ggpairs.
 
 -   If this is not currently listed, type the following in your **Console** pane and press Enter/Return afterwards.
 
-    ```{r  eval = FALSE}
+    
+    ```r
     install.packages("GGally")
     ```
 
@@ -65,11 +119,24 @@ We can access the raw data from their tab-delimited text file link: <https://www
 
 Create a new R code chunk below that is titled `load-data` and reads in the above linked TSV (tab-separated values) file by doing the following:
 
-```{r load-data}
 
+```r
 hfi <- read_csv('/home/kramerbr/data/hfi.csv')
-hfi_2016 <- filter(hfi, year == 2016)
+```
 
+```
+## Rows: 1458 Columns: 123
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: ","
+## chr   (3): ISO_code, countries, region
+## dbl (120): year, pf_rol_procedural, pf_rol_civil, pf_rol_criminal, pf_rol, p...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+```
+
+```r
+hfi_2016 <- filter(hfi, year == 2016)
 ```
 
 -   Rather than downloading this file, uploading to RStudio, then reading it in, explore how to load this file directly from the provided URL with `readr::read_tsv` (`{readr}` is part of `{tidyverse}`).
@@ -85,12 +152,20 @@ Create a new R code chunk below, with an appropriate title, that does the follow
 
 *ef_regulation_labor: Labor Market Regualtion*
 
-```{r dist}
+
+```r
 hfi_2016 %>% ggplot(aes(x= ef_regulation_labor)) + geom_histogram()
 ```
 
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
 
-```{r parsenip-spec}
+![](activity03_files/figure-gfm/dist-1.png)<!-- -->
+
+
+
+```r
 lm_spec <- linear_reg() %>%
   set_mode("regression") %>%
   set_engine("lm")
@@ -98,11 +173,27 @@ lm_spec <- linear_reg() %>%
 lm_spec
 ```
 
-```{r fit-lm}
+```
+## Linear Regression Model Specification (regression)
+## 
+## Computational engine: lm
+```
+
+
+```r
 slr_mod <- lm_spec %>% 
   fit(pf_score ~ pf_expression_control + ef_regulation_labor, data = hfi_2016)
 
 tidy(slr_mod)
+```
+
+```
+## # A tibble: 3 × 5
+##   term                  estimate std.error statistic  p.value
+##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>
+## 1 (Intercept)             4.11      0.306     13.4   6.23e-28
+## 2 pf_expression_control   0.537     0.0282    19.1   6.72e-43
+## 3 ef_regulation_labor     0.0319    0.0478     0.668 5.05e- 1
 ```
 
 ## Pairwise relationships
@@ -134,11 +225,14 @@ Now, we will obtain graphical and numerical summaries to describe the pairwise r
 -   Replace `explanatory` in the `select` line with the variable you identified above
 -   Run your code chunk or knit your document.
 
-```{r pairs-plot}
+
+```r
 hfi_2016 %>% 
   select(pf_score, pf_expression_control, ef_regulation_labor) %>% 
   ggpairs()
 ```
+
+![](activity03_files/figure-gfm/pairs-plot-1.png)<!-- -->
 
 Note that a warning message (really a list of warning messages) might display in your **Console** and likely under your R code chunk when you knit this report.
 In R, warning messages are not necessarily a bad thing and you should read these to make sure you understand what it is informing you of.
@@ -175,7 +269,8 @@ $$
 -   Replace `explanatory`, similarly to what you did in your `pairs-plot` R code chunk.
 -   Run your code chunk or knit your document.
 
-```{verbatim mlr-model}
+
+```default
 #fit the mlr model
 lm_spec <- linear_reg() %>%
   set_mode("regression") %>%
@@ -241,7 +336,8 @@ Fortunately, we can create our own.
 -   In the code chunk below titled `binary-pred`, replace "verbatim" with "r" just before the code chunk title.
 -   Run your code chunk or knit your document.
 
-```{verbatim binary-pred}
+
+```default
 hfi_2016 <- hfi_2016 %>%
   mutate(west_atlantic = if_else(
     region %in% c("North America", "Latin America & the Caribbean"),
@@ -255,7 +351,8 @@ hfi_2016 <- hfi_2016 %>%
 -   In the code chunk below titled `qual-mlr`, replace "verbatim" with "r" just before the code chunk title.
 -   Run your code chunk or knit your document.
 
-```{verbatim qual-mlr}
+
+```default
 # review any visual patterns
 hfi_2016 %>% 
   select(pf_score, west_atlantic, pf_expression_control) %>% 
@@ -350,7 +447,8 @@ $$
 -   In the code chunk below titled `int-mlr`, replace "verbatim" with "r" just before the code chunk title.
 -   Run your code chunk or knit your document.
 
-```{verbatim int-mlr}
+
+```default
 # review any visual patterns
 hfi_2016 %>% 
   select(pf_score, west_atlantic, pf_expression_control) %>% 
@@ -394,7 +492,8 @@ One way to check this is to build our null model (no predictors) and then compar
 
 -   In the code chunk below titled `mod-comp`, replace "verbatim" with "r" just before the code chunk title.
 
-```{verbatim mod-comp}
+
+```default
 # null model
 null_mod <- lm_spec %>% 
 fit(response ~ 1, data = data)
