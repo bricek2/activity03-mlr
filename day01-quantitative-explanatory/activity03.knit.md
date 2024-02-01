@@ -5,7 +5,7 @@ editor_options:
   markdown: 
     wrap: sentence
 ---
-*Test 
+*Test2
 
 
 In the last activity, you might have noticed that I made this Rmd output a document with a type of `github_document` (in the YAML header underneath the title - on line 3) instead of a HTML, Word, or PDF document.

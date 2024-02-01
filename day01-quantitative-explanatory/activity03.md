@@ -1,7 +1,7 @@
 Activity 3 - MLR
 ================
 
-\*Test
+\*Test2
 
 In the last activity, you might have noticed that I made this Rmd output
 a document with a type of `github_document` (in the YAML header
