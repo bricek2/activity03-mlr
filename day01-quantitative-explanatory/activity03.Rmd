@@ -5,7 +5,9 @@ editor_options:
   markdown: 
     wrap: sentence
 ---
-*Test2
+
+\*Test2
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -38,6 +40,7 @@ Remember that [Emil Hvitfeldt](https://www.emilhvitfeldt.com/) (of Posit) has pu
 library(tidymodels)
 library(tidyverse)
 library(GGally)
+library(scatterplot3d)
 ```
 
 Since we will be looking at many relationships graphically, it will be nice to not have to code each of these individually.
@@ -88,7 +91,6 @@ Create a new R code chunk below, with an appropriate title, that does the follow
 ```{r dist}
 hfi_2016 %>% ggplot(aes(x= ef_regulation_labor)) + geom_histogram()
 ```
-
 
 ```{r parsenip-spec}
 lm_spec <- linear_reg() %>%
@@ -148,7 +150,9 @@ Somewhat related... If you do not want all the messages `{tidyverse}` and `{tidy
 
 After running the `pairs-plot` code, answer the following questions:
 
-1.  For each pair of variables, how would you describe the relationship graphically? Do any of the relationships look linear? Are there any interesting/odd features (outliers, non-linear patterns, etc.)?
+1.  For each pair of variables, how would you describe the relationship graphically?
+    Do any of the relationships look linear?
+    Are there any interesting/odd features (outliers, non-linear patterns, etc.)?
 
     -   there is linerarity with pf_expression_score but not with ef_regulation_labor
     -   outliers for both expression score and labor regulation
@@ -159,7 +163,9 @@ After running the `pairs-plot` code, answer the following questions:
 
     -   pf_scores and freedom_score are highly correlated with a correlation of .84 whereas regulation_labor is low at .253
 
-3.  Are your two explanatory variables collinear (correlated)? Essentially, this means that adding more than one of these variables to the model would not add much value to the model. We will talk more on this issue in Activity 4 (other considerations in regression models).
+3.  Are your two explanatory variables collinear (correlated)?
+    Essentially, this means that adding more than one of these variables to the model would not add much value to the model.
+    We will talk more on this issue in Activity 4 (other considerations in regression models).
 
     -   No there are not .267
 
@@ -175,7 +181,7 @@ $$
 -   Replace `explanatory`, similarly to what you did in your `pairs-plot` R code chunk.
 -   Run your code chunk or knit your document.
 
-```{verbatim mlr-model}
+```{r mlr-model}
 #fit the mlr model
 lm_spec <- linear_reg() %>%
   set_mode("regression") %>%
@@ -184,7 +190,7 @@ lm_spec <- linear_reg() %>%
 lm_spec
 
 mlr_mod <- lm_spec %>% 
-fit(pf_score ~ pf_expression_control + explanatory, data = hfi_2016)
+fit(pf_score ~ pf_expression_control + ef_regulation_labor, data = hfi_2016)
 
 # model output
 tidy(mlr_mod)
@@ -196,12 +202,10 @@ After doing this, answer the following questions:
 
 $$
 \hat{y} = b_0 + b_1 \times x_1
-$$
-
-where $b_0$ and $b_1$ were your model parameter estimates.
+$$ *y = 4.1 + .54x1 + .03x2* where $b_0$ and $b_1$ were your model parameter estimates.
 Note that your model here will be different (and have more terms).
 
-5.  For each of the estimated parameters (the *y*-intercept and the slopes associated with each explanatory variable - three total), interpret these values in the context of this problem. That is, what do they mean for a "non-data" person?
+5.  For each of the estimated parameters (the *y*-intercept and the slopes associated with each explanatory variable - three total), interpret these values in the context of this problem. That is, what do they mean for a "non-data" person? *As expression control increases by one point, pf_scores will increase by just over half a point. There seems to be a relationship. But market regulation doesn't have a clear relationship.*
 
 ## Challenge: 3-D plots
 
@@ -209,11 +213,33 @@ In *ISL*, the authors provided a 3-D scatterplot with a plane that represents th
 Do some internet sleuthing to minimally produce a 3-D scatterplot (you do not need to include the plane).
 Ideally, this would be something that plays nicely with (looks similar to) `{ggplot2}`.
 
--   Create a new R code chunk, with a descriptive name, and add your code to create this plot.
+-   Create a new R code chunk, with a descriptive name, and add your code to create this plot. <http://www.sthda.com/>
+
+```{r 3-D scatterplot}
+#hfi_2016 %>%
+  scatterplot3d(hfi_2016$pf_score, y = hfi_2016$pf_expression_control, z= hfi_2016$ef_regulation_labor)
+
+```
 
 After doing this, respond to the following prompt:
 
 6.  Compare your 3-D scatterplot and the `GGally::ggpairs` output. Comment on the strengths and weaknesses of these two visualizations. Do both display on GitHub when you push your work there?
+
+**GGally:ggpairs**
+
+pros: clear comparison between variables
+
+-   lists coef
+
+-   plain and simple
+
+cons: many variables can become cluttered visually and misses out on direction
+
+3-D scatter plot
+
+-   holisitic view of the variables on a 3d plane, full picture
+
+cons: miss out in finer details
 
 # Day 2
 
@@ -241,7 +267,7 @@ Fortunately, we can create our own.
 -   In the code chunk below titled `binary-pred`, replace "verbatim" with "r" just before the code chunk title.
 -   Run your code chunk or knit your document.
 
-```{verbatim binary-pred}
+```{r binary-pred}
 hfi_2016 <- hfi_2016 %>%
   mutate(west_atlantic = if_else(
     region %in% c("North America", "Latin America & the Caribbean"),
@@ -255,7 +281,7 @@ hfi_2016 <- hfi_2016 %>%
 -   In the code chunk below titled `qual-mlr`, replace "verbatim" with "r" just before the code chunk title.
 -   Run your code chunk or knit your document.
 
-```{verbatim qual-mlr}
+```{r qual-mlr}
 # review any visual patterns
 hfi_2016 %>% 
   select(pf_score, west_atlantic, pf_expression_control) %>% 
@@ -284,9 +310,15 @@ Answer the following questions:
 
 8.  What is the label that R assigned to this explanatory variable `term`?
 
+    *west_atlanticYes*
+
 9.  What information is represented here?
 
+    *countries that are in the atlantic west*
+
 10. What information is missing here?
+
+    countires that aren't in the atlantic west
 
 Your are essentially fitting two models (or $k$ models, where $k$ is the number of levels in your qualitative variable).
 From your reading, you learned that R is creating an indicator variable (see p. 83).
@@ -298,10 +330,43 @@ R simply codes the level that comes first alphabetically with a $0$ for your ind
 You can change this reference level of a categorical variable, which is the level that is coded as a 0, using the `relevel` function.
 Use `?relevel` to learn more.
 
+```{r convert factor}
+hfi_2016$west_atlantic <- factor(hfi_2016$west_atlantic)
+```
+
+```{r relevel}
+hfi_2016$west_atlantic <- relevel(hfi_2016$west_atlantic, ref = "Yes" )
+```
+
+```{r reveled check}
+# review any visual patterns
+hfi_2016 %>% 
+  select(pf_score, west_atlantic, pf_expression_control) %>% 
+  ggpairs()
+
+#fit the mlr model
+lm_spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+
+qual_mod <- lm_spec %>% 
+  fit(pf_score ~ west_atlantic + pf_expression_control, data = hfi_2016)
+
+# model output
+tidy(qual_mod)
+```
+
+
 11. Write the estimated equation for your MLR model with a qualitative explanatory variable.
+
+   
 
 12. Now, for each level of your qualitative variable, write the simplified equation of the estimated line for that level.
     Note that if your qualitative variable has two levels, you should have two simplified equations.
+    
+    * pf_score = 4.27 + .1(xNo) + .54(x2)*
+    * pf_score = 4.27 + -.1(xYes) + .54(x2)*
+    
 
 The interpretation of the coefficients (parameter estimates) in multiple regression is slightly different from that of simple regression.
 The estimate for the indicator variable reflects how much more a group is expected to be if something has that quality, *while holding all other variables constant*.
@@ -309,13 +374,31 @@ The estimate for the quantitative variable reflects how much change in the respo
 
 13. Interpret the parameter estimate for the reference level of your categorical variable in the context of your problem.
     Page 83 of the text can help here (or have me come chat with you).
-
+*Countires in the west_atlantic will increase the pf_score by .1 whereas countries not in the west atlatntic will decrease the pf_score by .1* 
 14. Interpret the parameter estimate for your quantitative variable in the context of your problem.
+*As expression scores increase by one point, pf_scores will increase by .54 points*
 
 ## Challenge: Multiple levels
 
 Below, create a new R code chunk (with a descriptive name) that fits a new model with the same response (`pf_score`) and quantitative explanatory variable (`pf_expression_control`), but now use a qualitative variable with more than two levels (say, `region`) and obtain the `tidy` model output.
 How does R appear to handle categorical variables with more than two levels?
+```{r qual more levels}
+# review any visual patterns
+hfi_2016 %>% 
+  select(pf_score, region, pf_expression_control) %>% 
+  ggpairs()
+
+#fit the mlr model
+lm_spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+
+qual_mod <- lm_spec %>% 
+  fit(pf_score ~ region + pf_expression_control, data = hfi_2016)
+
+# model output
+tidy(qual_mod)
+```
 
 # Day 3
 
@@ -323,7 +406,9 @@ We will explore a MLR model with an interaction between quantitative and qualita
 From the modeling process we came up with as a class, we will now address the "series of important questions that we should consider when performing multiple linear regression" (*ISL* [Section 3.2.2](https://hastie.su.domains/ISLR2/ISLRv2_website.pdf), p. 75):
 
 1.  Is at least one of the $p$ predictors $X_1$, $X_2$, $\ldots$, $X_p$ useful in predicting the response $Y$?
+  *Yes*
 2.  Do all the predictors help to explain $Y$, or is only a subset of the predictors useful?
+  *some*
 3.  How well does the model fit the data?
 4.  Given a set of predictor values, what response value should we predict and how accurate is our prediction?
 

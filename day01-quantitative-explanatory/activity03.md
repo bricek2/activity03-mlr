@@ -65,7 +65,7 @@ library(tidymodels)
     ## ✖ dplyr::filter()  masks stats::filter()
     ## ✖ dplyr::lag()     masks stats::lag()
     ## ✖ recipes::step()  masks stats::step()
-    ## • Use tidymodels_prefer() to resolve common conflicts.
+    ## • Dig deeper into tidy modeling with R at https://www.tmwr.org
 
 ``` r
 library(tidyverse)
@@ -91,6 +91,10 @@ library(GGally)
     ## Registered S3 method overwritten by 'GGally':
     ##   method from   
     ##   +.gg   ggplot2
+
+``` r
+library(scatterplot3d)
+```
 
 Since we will be looking at many relationships graphically, it will be
 nice to not have to code each of these individually. `{GGally}` is an
@@ -297,20 +301,33 @@ $$
   R code chunk.
 - Run your code chunk or knit your document.
 
-``` default
+``` r
 #fit the mlr model
 lm_spec <- linear_reg() %>%
   set_mode("regression") %>%
   set_engine("lm")
 
 lm_spec
+```
 
+    ## Linear Regression Model Specification (regression)
+    ## 
+    ## Computational engine: lm
+
+``` r
 mlr_mod <- lm_spec %>% 
-fit(pf_score ~ pf_expression_control + explanatory, data = hfi_2016)
+fit(pf_score ~ pf_expression_control + ef_regulation_labor, data = hfi_2016)
 
 # model output
 tidy(mlr_mod)
 ```
+
+    ## # A tibble: 3 × 5
+    ##   term                  estimate std.error statistic  p.value
+    ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)             4.11      0.306     13.4   6.23e-28
+    ## 2 pf_expression_control   0.537     0.0282    19.1   6.72e-43
+    ## 3 ef_regulation_labor     0.0319    0.0478     0.668 5.05e- 1
 
 After doing this, answer the following questions:
 
@@ -319,15 +336,17 @@ After doing this, answer the following questions:
 
 $$
 \hat{y} = b_0 + b_1 \times x_1
-$$
-
-where $b_0$ and $b_1$ were your model parameter estimates. Note that
-your model here will be different (and have more terms).
+$$ *y = 4.1 + .54x1 + .03x2* where $b_0$ and $b_1$ were your model
+parameter estimates. Note that your model here will be different (and
+have more terms).
 
 5.  For each of the estimated parameters (the *y*-intercept and the
     slopes associated with each explanatory variable - three total),
     interpret these values in the context of this problem. That is, what
-    do they mean for a “non-data” person?
+    do they mean for a “non-data” person? *As expression control
+    increases by one point, pf_scores will increase by just over half a
+    point. There seems to be a relationship. But market regulation
+    doesn’t have a clear relationship.*
 
 ## Challenge: 3-D plots
 
@@ -338,13 +357,37 @@ Ideally, this would be something that plays nicely with (looks similar
 to) `{ggplot2}`.
 
 - Create a new R code chunk, with a descriptive name, and add your code
-  to create this plot.
+  to create this plot. <http://www.sthda.com/>
+
+``` r
+#hfi_2016 %>%
+  scatterplot3d(hfi_2016$pf_score, y = hfi_2016$pf_expression_control, z= hfi_2016$ef_regulation_labor)
+```
+
+![](activity03_files/figure-gfm/3-D%20scatterplot-1.png)<!-- -->
 
 After doing this, respond to the following prompt:
 
 6.  Compare your 3-D scatterplot and the `GGally::ggpairs` output.
     Comment on the strengths and weaknesses of these two visualizations.
     Do both display on GitHub when you push your work there?
+
+**GGally:ggpairs**
+
+pros: clear comparison between variables
+
+- lists coef
+
+- plain and simple
+
+cons: many variables can become cluttered visually and misses out on
+direction
+
+3-D scatter plot
+
+- holisitic view of the variables on a 3d plane, full picture
+
+cons: miss out in finer details
 
 # Day 2
 
@@ -376,7 +419,7 @@ variables have only two levels. Fortunately, we can create our own.
   “r” just before the code chunk title.
 - Run your code chunk or knit your document.
 
-``` default
+``` r
 hfi_2016 <- hfi_2016 %>%
   mutate(west_atlantic = if_else(
     region %in% c("North America", "Latin America & the Caribbean"),
@@ -392,12 +435,19 @@ hfi_2016 <- hfi_2016 %>%
   just before the code chunk title.
 - Run your code chunk or knit your document.
 
-``` default
+``` r
 # review any visual patterns
 hfi_2016 %>% 
   select(pf_score, west_atlantic, pf_expression_control) %>% 
   ggpairs()
+```
 
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](activity03_files/figure-gfm/qual-mlr-1.png)<!-- -->
+
+``` r
 #fit the mlr model
 lm_spec <- linear_reg() %>%
   set_mode("regression") %>%
@@ -409,6 +459,13 @@ qual_mod <- lm_spec %>%
 # model output
 tidy(qual_mod)
 ```
+
+    ## # A tibble: 3 × 5
+    ##   term                  estimate std.error statistic  p.value
+    ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)              4.38     0.213     20.5   1.57e-46
+    ## 2 west_atlanticYes        -0.102    0.167     -0.612 5.41e- 1
+    ## 3 pf_expression_control    0.540    0.0273    19.8   1.01e-44
 
 When looking at your `ggpairs` output, remember to ask yourself, “does
 it make sense to include all of these variables?” Specifically, if you
@@ -431,9 +488,15 @@ questions:
 8.  What is the label that R assigned to this explanatory variable
     `term`?
 
+    *west_atlanticYes*
+
 9.  What information is represented here?
 
+    *countries that are in the atlantic west*
+
 10. What information is missing here?
+
+    countires that aren’t in the atlantic west
 
 Your are essentially fitting two models (or $k$ models, where $k$ is the
 number of levels in your qualitative variable). From your reading, you
@@ -449,6 +512,46 @@ You can change this reference level of a categorical variable, which is
 the level that is coded as a 0, using the `relevel` function. Use
 `?relevel` to learn more.
 
+``` r
+hfi_2016$west_atlantic <- factor(hfi_2016$west_atlantic)
+```
+
+``` r
+hfi_2016$west_atlantic <- relevel(hfi_2016$west_atlantic, ref = "Yes" )
+```
+
+``` r
+# review any visual patterns
+hfi_2016 %>% 
+  select(pf_score, west_atlantic, pf_expression_control) %>% 
+  ggpairs()
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](activity03_files/figure-gfm/reveled%20check-1.png)<!-- -->
+
+``` r
+#fit the mlr model
+lm_spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+
+qual_mod <- lm_spec %>% 
+  fit(pf_score ~ west_atlantic + pf_expression_control, data = hfi_2016)
+
+# model output
+tidy(qual_mod)
+```
+
+    ## # A tibble: 3 × 5
+    ##   term                  estimate std.error statistic  p.value
+    ##   <chr>                    <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)              4.27     0.150     28.5   2.30e-64
+    ## 2 west_atlanticNo          0.102    0.167      0.612 5.41e- 1
+    ## 3 pf_expression_control    0.540    0.0273    19.8   1.01e-44
+
 11. Write the estimated equation for your MLR model with a qualitative
     explanatory variable.
 
@@ -456,6 +559,9 @@ the level that is coded as a 0, using the `relevel` function. Use
     simplified equation of the estimated line for that level. Note that
     if your qualitative variable has two levels, you should have two
     simplified equations.
+
+    - pf_score = 4.27 + .1(xNo) + .54(x2)\*
+    - pf_score = 4.27 + -.1(xYes) + .54(x2)\*
 
 The interpretation of the coefficients (parameter estimates) in multiple
 regression is slightly different from that of simple regression. The
@@ -468,10 +574,12 @@ constant*.
 
 13. Interpret the parameter estimate for the reference level of your
     categorical variable in the context of your problem. Page 83 of the
-    text can help here (or have me come chat with you).
-
+    text can help here (or have me come chat with you). *Countires in
+    the west_atlantic will increase the pf_score by .1 whereas countries
+    not in the west atlatntic will decrease the pf_score by .1*
 14. Interpret the parameter estimate for your quantitative variable in
-    the context of your problem.
+    the context of your problem. *As expression scores increase by one
+    point, pf_scores will increase by .54 points*
 
 ## Challenge: Multiple levels
 
@@ -481,6 +589,46 @@ explanatory variable (`pf_expression_control`), but now use a
 qualitative variable with more than two levels (say, `region`) and
 obtain the `tidy` model output. How does R appear to handle categorical
 variables with more than two levels?
+
+``` r
+# review any visual patterns
+hfi_2016 %>% 
+  select(pf_score, region, pf_expression_control) %>% 
+  ggpairs()
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](activity03_files/figure-gfm/qual%20more%20levels-1.png)<!-- -->
+
+``` r
+#fit the mlr model
+lm_spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+
+qual_mod <- lm_spec %>% 
+  fit(pf_score ~ region + pf_expression_control, data = hfi_2016)
+
+# model output
+tidy(qual_mod)
+```
+
+    ## # A tibble: 11 × 5
+    ##    term                                estimate std.error statistic  p.value
+    ##    <chr>                                  <dbl>     <dbl>     <dbl>    <dbl>
+    ##  1 (Intercept)                            5.39     0.272     19.8   7.47e-44
+    ##  2 regionEast Asia                        0.496    0.380      1.31  1.93e- 1
+    ##  3 regionEastern Europe                   0.326    0.309      1.06  2.93e- 1
+    ##  4 regionLatin America & the Caribbean   -0.229    0.300     -0.762 4.47e- 1
+    ##  5 regionMiddle East & North Africa      -1.39     0.299     -4.64  7.40e- 6
+    ##  6 regionNorth America                    0.610    0.542      1.13  2.62e- 1
+    ##  7 regionOceania                          0.233    0.433      0.537 5.92e- 1
+    ##  8 regionSouth Asia                      -0.716    0.305     -2.35  2.02e- 2
+    ##  9 regionSub-Saharan Africa              -0.746    0.283     -2.64  9.24e- 3
+    ## 10 regionWestern Europe                   0.522    0.345      1.52  1.32e- 1
+    ## 11 pf_expression_control                  0.387    0.0299    12.9   2.99e-26
 
 # Day 3
 
@@ -493,9 +641,9 @@ we should consider when performing multiple linear regression” (*ISL*
 p. 75):
 
 1.  Is at least one of the $p$ predictors $X_1$, $X_2$, $\ldots$, $X_p$
-    useful in predicting the response $Y$?
+    useful in predicting the response $Y$? *Yes*
 2.  Do all the predictors help to explain $Y$, or is only a subset of
-    the predictors useful?
+    the predictors useful? *some*
 3.  How well does the model fit the data?
 4.  Given a set of predictor values, what response value should we
     predict and how accurate is our prediction?
